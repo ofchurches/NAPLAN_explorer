@@ -5,16 +5,6 @@ library(readxl)
 library(tidyverse)
 library(viridis)
 
-mycss <- "
-.irs-bar,
-.irs-bar-edge,
-.irs-single,
-.irs-grid-pol {
-  background: red;
-  border-color: red;
-}
-"
-
 NAPLAN_Numeracy_2019 <- read_excel("NAPLAN Numeracy 2019.xlsx")
 
 NAPLAN_Numeracy_2019_pull <- NAPLAN_Numeracy_2019 %>%
@@ -41,6 +31,7 @@ NAPLAN_Numeracy_2019_rect <- NAPLAN_Numeracy_2019 %>%
                             "Did not demonstrate SEA" = c(as.character(min(Band)), as.character(min(Band) + 1))
   )
   ) %>%
+  mutate(SEA = fct_rev(SEA)) %>%
   ungroup()
 
 # Define UI for application that draws a histogram
@@ -52,7 +43,6 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-          tags$style(mycss),
             sliderInput("y3",
                         "Raw score in Year 3:",
                         min = NAPLAN_Numeracy_2019 %>%
@@ -113,7 +103,7 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-          h4("The plot below shows confidence intervals around the scores recorded for a single student in the NAPLAN Numeracy Domain."), 
+          h4("The plot below shows confidence intervals around the scores recorded for a single student in the NAPLAN Numeracy Domain using data from 2019."), 
           h4("Use the sliders to set the raw score for each year level. This will move the points on the plot to the right and set the whiskers automatically in terms of the corresponding NAPLAN Scale Score. The whiskers above and below each score show the 95% confidence interval for that score. Note that many scores extend over SEA thresholds."),
           plotOutput("distPlot")
         )
