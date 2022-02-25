@@ -11,3 +11,4 @@ SELECT  DISTINCT
 FROM [BI].[rel].[Assessment_Achievement_Level]
 WHERE [AAL_BG_Colour] NOT IN ('#FFFF00', 'NULL')
 ```
+The corespondence tables are on the ACARA website [here](https://www.nap.edu.au/results-and-reports/national-reports) (in pdf!)
