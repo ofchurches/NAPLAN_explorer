@@ -32,7 +32,10 @@ NAPLAN_Numeracy_2019_rect <- NAPLAN_Numeracy_2019 %>%
   )
   ) %>%
   mutate(SEA = fct_rev(SEA)) %>%
-  ungroup()
+  ungroup() %>%
+  group_by(Year) %>%
+  mutate(year_min = min(NAPLAN_Numeracy_2019_push)) %>%
+  mutate(year_max = max(`NAPLAN Scale Score`))
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -115,16 +118,16 @@ server <- function(input, output) {
 
     output$distPlot <- renderPlot({
       
-      selected_y3 <- NAPLAN_Numeracy_2019 %>%
+      selected_y3 <- NAPLAN_Numeracy_2019_rect %>%
         filter(Year == 3 & `Raw Score` == input$y3)
       
-      selected_y5 <- NAPLAN_Numeracy_2019 %>%
+      selected_y5 <- NAPLAN_Numeracy_2019_rect %>%
         filter(Year == 5 & `Raw Score` == input$y5)
       
-      selected_y7 <- NAPLAN_Numeracy_2019 %>%
+      selected_y7 <- NAPLAN_Numeracy_2019_rect %>%
         filter(Year == 7 & `Raw Score` == input$y7)
       
-      selected_y9 <- NAPLAN_Numeracy_2019 %>%
+      selected_y9 <- NAPLAN_Numeracy_2019_rect %>%
         filter(Year == 9 & `Raw Score` == input$y9)
       
       selected <- selected_y3 %>%
@@ -138,7 +141,7 @@ server <- function(input, output) {
         geom_rect(data = NAPLAN_Numeracy_2019_rect, mapping = aes(xmin = Year - 1, xmax = Year + 1, 
                                                                   ymin = band_min, ymax = band_max,
                                                                   fill = SEA)) +
-        scale_fill_manual(values = c("#457645", "#b0bf1a", "#cee3ae")) + 
+        scale_fill_manual(values = c("#cee3ae", "#b0bf1a", "#457645")) + 
         geom_rect(data = NAPLAN_Numeracy_2019_rect, mapping = aes(xmin = Year - 1, xmax = Year + 1, 
                                                                   ymin = band_min, ymax = band_max
         ), 
@@ -154,8 +157,11 @@ server <- function(input, output) {
 
         geom_point(data = selected, mapping = aes(x = Year, y = `NAPLAN Scale Score`)) + 
         geom_errorbar(data = selected, mapping = aes(x = Year, 
-                                                     ymin = `NAPLAN Scale Score` - (`Scale Score SE` * 1.96), 
-                                                     ymax = `NAPLAN Scale Score` + (`Scale Score SE` * 1.96)), 
+                                                     ymin = pmax(`NAPLAN Scale Score` - (`Scale Score SE` * 1.96), 
+                                                                 year_min), 
+                                                     ymax = pmin(`NAPLAN Scale Score` + (`Scale Score SE` * 1.96), 
+                                                                 year_max)
+                                                     ), 
                       size = .9) + 
         
         theme_minimal() +
